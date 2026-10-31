@@ -1,0 +1,33 @@
+# Roblox / Rojo
+*.rbxl
+*.rbxlx
+*.rbxm
+*.rbxmx
+sourcemap.json
+
+# Tooling
+aftman.toml.lock
+*.lock
+
+# OS / editor
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+*.swp
+*~
+
+# Logs and temp
+*.log
+tmp/
+temp/
+.rojo/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Never ignore project memory
+!PROJECT_MEMORY.md
