@@ -71,7 +71,7 @@ function SupplierService.Purchase(player: Player, productId: string, quantity: a
 		return false, addErr
 	end
 
-	NotificationService.Success(player, UIConfig.Texts.PurchaseSuccess)
+	NotificationService.Success(player, "Bought stock! Open Inventory → Refill to stock shelves.")
 	return true, nil
 end
 

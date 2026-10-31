@@ -222,4 +222,57 @@ function StoreService.GetMapFolder(): Folder
 	return map :: Folder
 end
 
+function StoreService.UpdateShelfVisuals(player: Player)
+	local plotId = ownerToPlot[player.UserId]
+	if not plotId then
+		return
+	end
+	local plot = plots[plotId]
+	local shelves = shelvesByPlot[plotId]
+	if not plot or not plot.Model or not shelves then
+		return
+	end
+
+	for shelfId, stock in pairs(shelves) do
+		local part = plot.Model:FindFirstChild(shelfId, true)
+		if part and part:IsA("BasePart") then
+			local filled = stock.ProductId ~= nil and stock.Quantity > 0
+			part.Color = if filled then Color3.fromHex("38C985") else Color3.fromHex("A0522D")
+
+			local billboard = part:FindFirstChild("StockLabel") :: BillboardGui?
+			if not billboard then
+				billboard = Instance.new("BillboardGui")
+				billboard.Name = "StockLabel"
+				billboard.Size = UDim2.fromOffset(120, 40)
+				billboard.StudsOffset = Vector3.new(0, 3, 0)
+				billboard.AlwaysOnTop = true
+				billboard.Parent = part
+				local label = Instance.new("TextLabel")
+				label.Name = "Text"
+				label.Size = UDim2.fromScale(1, 1)
+				label.BackgroundTransparency = 0.35
+				label.BackgroundColor3 = Color3.fromHex("202A35")
+				label.TextColor3 = Color3.fromHex("FFFFFF")
+				label.Font = Enum.Font.GothamBold
+				label.TextScaled = true
+				label.Parent = billboard
+				local corner = Instance.new("UICorner")
+				corner.CornerRadius = UDim.new(0, 6)
+				corner.Parent = label
+			end
+
+			local text = billboard:FindFirstChild("Text")
+			if text and text:IsA("TextLabel") then
+				if filled then
+					text.Text = string.format("%s x%d", stock.ProductId :: string, stock.Quantity)
+					billboard.Enabled = true
+				else
+					text.Text = "Empty"
+					billboard.Enabled = true
+				end
+			end
+		end
+	end
+end
+
 return StoreService

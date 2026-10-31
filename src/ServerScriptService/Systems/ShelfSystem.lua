@@ -74,7 +74,8 @@ function ShelfSystem.Refill(player: Player, shelfId: any, productId: any, quanti
 
 	shelf.ProductId = productId
 	shelf.Quantity += toPlace
-	NotificationService.Success(player, string.format("Stocked %dx on %s.", toPlace, shelfId))
+	StoreService.UpdateShelfVisuals(player)
+	NotificationService.Success(player, string.format("Stocked %dx on %s. Customers can come now!", toPlace, shelfId))
 	return true, nil
 end
 
@@ -118,6 +119,7 @@ function ShelfSystem.TakeForCustomer(plotId: number, maxItems: number): { { Prod
 		end
 	end
 
+	StoreService.UpdateShelfVisuals(owner)
 	return basket
 end
 

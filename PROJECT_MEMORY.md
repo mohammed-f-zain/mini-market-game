@@ -383,6 +383,42 @@ Mini Market Tycoon is a free-to-play Roblox multiplayer experience where each pl
 
 ---
 
+### [2026-10-31T20:57:28+03:00] UPDATE-0002
+
+**Agent:** Cursor Agent
+
+**Operation:** MODIFY
+
+**Feature:** Inventory / Shelf UX feedback
+
+**Files Modified:**
+- `src/ServerScriptService/Services/StoreService.lua`
+- `src/ServerScriptService/Systems/ShelfSystem.lua`
+- `src/ServerScriptService/Services/SupplierService.lua`
+- `src/StarterPlayer/StarterPlayerScripts/Controllers/UIController.lua`
+- `MiniMarketTycoon.rbxlx` (rebuilt)
+
+**Previous Behavior:**
+- Buying stock only updated inventory with weak feedback.
+- Shelves had no visible stock labels; customers required shelf stock but this was unclear.
+- Reopening Inventory after refill could close the panel instead of refreshing.
+
+**New Behavior:**
+- Purchase toast tells player to Inventory → Refill.
+- Inventory panel shows empty/hint text and refreshes after buy/refill.
+- Shelves show BillboardGui stock labels and turn green when stocked.
+
+**Reason:**
+Studio playtest: player bought products but saw no customers because shelves were never refilled, and empty brown shelves looked unstocked.
+
+**Testing:**
+- Code changes + `rojo build` to `MiniMarketTycoon.rbxlx`.
+- Studio verification pending by user after reopening rebuilt place.
+
+**Status:** Implemented.
+
+---
+
 ## 6. Architectural Decisions
 
 ### [2026-10-31T20:31:59+03:00] ADR-001 — Server-Authoritative Services Architecture
@@ -520,12 +556,12 @@ CheckoutSystem → EconomyService, ProgressionSystem, StoreService
 
 ## 12. Current Development State
 
-- **Current phase:** Phase 5 complete in code; awaiting Studio verification
+- **Current phase:** Phase 5 + UX feedback fix; Studio playtest in progress via `MiniMarketTycoon.rbxlx`
 - **Completed phases (code):** 1 Foundation, 2 Store Management, 3 NPC Customers, 4 Progression, 5 Persistence (integration points)
-- **Active development task:** None (initial MVP landed)
-- **Next recommended task:** Run `rojo serve`, connect Studio, execute `docs/TESTING.md` checklist with 2–4 players
+- **Active development task:** Help user complete Shop → Inventory Refill → Customer loop in Studio
+- **Next recommended task:** Reopen rebuilt `MiniMarketTycoon.rbxlx`, refill shelves, confirm NPC customers spawn
 - **Features awaiting testing:** NPC pathfinding, DataStore with API Services, multiplayer ownership, mobile HUD
-- **Blocking issues:** None for local code continuation; Studio required for runtime validation
+- **Blocking issues:** Live Rojo plugin sync still failing with InvalidUrl; using rbxlx rebuild workflow
 
 ---
 

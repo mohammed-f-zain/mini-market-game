@@ -71,8 +71,9 @@ local function clearPanel()
 	activePanel = nil
 end
 
-local function openPanel(name: string, builder: (Frame) -> ())
-	if activePanel == name then
+local function openPanel(name: string, builder: (Frame) -> (), forceRefresh: boolean?)
+	-- Clicking the same HUD button closes the panel; forceRefresh rebuilds it.
+	if activePanel == name and not forceRefresh then
 		clearPanel()
 		return
 	end
@@ -140,7 +141,7 @@ local function card(parent: Instance): Frame
 	return f
 end
 
-function UIController.ShowShop()
+function UIController.ShowShop(forceRefresh: boolean?)
 	openPanel("Supplier Shop", function(body)
 		if not snapshot or not snapshot.Catalog then
 			return
@@ -177,7 +178,12 @@ function UIController.ShowShop()
 				local result = remote:InvokeServer(product.Id, 5)
 				busy = false
 				if result and result.Ok then
-					-- snapshot push will refresh
+					-- Pull fresh snapshot then open inventory so products are visible
+					local snap = RemoteBootstrap.GetFunction("GetSnapshot"):InvokeServer()
+					if snap then
+						UIController.UpdateSnapshot(snap)
+					end
+					UIController.ShowInventory(true)
 				end
 			end)
 			buy.Position = UDim2.new(1, -110, 0, 20)
@@ -188,10 +194,10 @@ function UIController.ShowShop()
 				buy.Active = false
 			end
 		end
-	end)
+	end, forceRefresh)
 end
 
-function UIController.ShowInventory()
+function UIController.ShowInventory(forceRefresh: boolean?)
 	openPanel("Inventory", function(body)
 		if not snapshot then
 			return
@@ -207,7 +213,9 @@ function UIController.ShowInventory()
 		cap.TextXAlignment = Enum.TextXAlignment.Left
 		cap.Parent = body
 
+		local hasItems = false
 		for productId, quantity in pairs(snapshot.Inventory) do
+			hasItems = true
 			local row = card(body)
 			local name = Instance.new("TextLabel")
 			name.Size = UDim2.new(0.5, 0, 1, 0)
@@ -234,14 +242,41 @@ function UIController.ShowInventory()
 				busy = true
 				local remote = RemoteBootstrap.GetFunction("RefillShelf")
 				remote:InvokeServer(targetShelf, productId, math.min(10, quantity))
+				local snap = RemoteBootstrap.GetFunction("GetSnapshot"):InvokeServer()
 				busy = false
+				if snap then
+					UIController.UpdateSnapshot(snap)
+				end
+				UIController.ShowInventory(true)
 			end)
 			refill.Position = UDim2.new(1, -110, 0.5, -18)
 		end
-	end)
+
+		if not hasItems then
+			local empty = Instance.new("TextLabel")
+			empty.Size = UDim2.new(1, 0, 0, 60)
+			empty.BackgroundTransparency = 1
+			empty.Text = "Inventory empty.\nOpen Shop and Buy x5 first."
+			empty.Font = UIConfig.Font
+			empty.TextSize = 14
+			empty.TextColor3 = UIConfig.Colors.DarkText
+			empty.TextWrapped = true
+			empty.Parent = body
+		else
+			local hint = Instance.new("TextLabel")
+			hint.Size = UDim2.new(1, 0, 0, 40)
+			hint.BackgroundTransparency = 1
+			hint.Text = "Click Refill to put products on shelves.\nCustomers only come when shelves have stock."
+			hint.Font = UIConfig.Font
+			hint.TextSize = 12
+			hint.TextColor3 = UIConfig.Colors.DarkText
+			hint.TextWrapped = true
+			hint.Parent = body
+		end
+	end, forceRefresh)
 end
 
-function UIController.ShowUpgrades()
+function UIController.ShowUpgrades(forceRefresh: boolean?)
 	openPanel("Upgrades", function(body)
 		if not snapshot then
 			return
@@ -286,7 +321,7 @@ function UIController.ShowUpgrades()
 			btn.Position = UDim2.new(1, -110, 0.5, -18)
 			btn.TextColor3 = UIConfig.Colors.DarkText
 		end
-	end)
+	end, forceRefresh)
 end
 
 function UIController.UpdateSnapshot(data: any)
